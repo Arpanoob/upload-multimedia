@@ -3,13 +3,27 @@ const app=express();
 var session = require('express-session')
 const fs=require('fs');
 const multer  = require('multer')
-const upload = multer({ dest: 'uploads/' })
+app.use(express.static('uploads'));
+
+
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, "uploads/")
+  },
+  filename: function (req, file, cb) {
+    const name = file.originalname;
+    console.log(name);
+    cb(null, name)
+  },
+})
+
+const upload = multer({ storage: storage })
 app.use(upload.single('pic'));
 app.use(express.json());
-app.use(express.static('uploads'));
 
 // app.js or server.js
 app.set('view engine', 'ejs');
+app.use(express.urlencoded({extended:true}));
 
 app.use(session({
   secret: 'keyboard cat',
@@ -17,7 +31,6 @@ app.use(session({
   saveUninitialized: true,
 }))
 
-app.use(express.urlencoded({extended:true}));
 var d=[];
 app.get('/signup',function(req,res)
 {
@@ -117,6 +130,7 @@ app.delete('/todo', function (req, res) {
 });
 app.post('/signup',function(req,res){
   let profilePic=req.file;
+  console.log("FFFF"+req.url);
   req.session.pic=profilePic.filename;
   console.log(profilePic.originalname+","+req.body.password+" , "+req.body.confirmpassword+","+profilePic);
   const user={profilePic:profilePic.filename};
@@ -145,8 +159,10 @@ let flag=false;
          flag=true;
       }
     });
+    console.log("LLLLLLLLLLLLL")
     if(flag)
    { 
+    console.log("LLLLLLLLLLLLL")
     //res.status(401).end('email present');
     res.render('signup',{error:"email or username already exist"});
     return;
@@ -211,7 +227,7 @@ let S=false;
 
       dataArray.forEach(function(user) 
       {
-        if(user.username===username&&user.confirmPassword===password&&flag==false)
+        if(user.username===username&&user.confirmpassword===password&&flag==false)
         {
           req.session.flag=true;
           console.log("ff");
