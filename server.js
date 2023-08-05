@@ -3,12 +3,17 @@ const app=express();
 var session = require('express-session')
 const fs=require('fs');
 const multer  = require('multer')
+app.use(express.urlencoded({extended:true}));
+app.use(express.static('public'));
 app.use(express.static('uploads'));
 
 
 const storage = multer.diskStorage({
   destination: function (req, file, cb) {
+    if(req.url==='/signup')
     cb(null, "uploads/")
+    if(req.url==='/todo')
+    cb(null,"public/")
   },
   filename: function (req, file, cb) {
     const name = file.originalname;
@@ -23,7 +28,7 @@ app.use(express.json());
 
 // app.js or server.js
 app.set('view engine', 'ejs');
-app.use(express.urlencoded({extended:true}));
+
 
 app.use(session({
   secret: 'keyboard cat',
@@ -66,7 +71,15 @@ app.post('/todo', function (req, res) {
     }
 
     try {
+     // console.log("ff"+req.body);
+    
+      let file=req.file;
+      let body=req.body;
+      body["todopic"]=file.filename;
+      body["status"]=false;
+        console.log(file.filename+"fffffff"+req.file);
       dataArray.push(req.body);
+      console.log(dataArray);
       fs.writeFile('todo.txt', JSON.stringify(dataArray), function (writeErr) {
         if (writeErr) {
           console.error('Error writing to file:', writeErr);
@@ -92,7 +105,7 @@ app.delete('/todo', function (req, res) {
   }
 
   const name = req.body.text;
-
+  const body=req.body;
   fs.readFile('todo.txt', 'utf-8', function (err, data) {
     if (err) {
       console.error('Error reading file:', err);
@@ -107,7 +120,14 @@ app.delete('/todo', function (req, res) {
 
                      // find the index of the object with the name
     const indexToRemove = dataArray.findIndex((item) => item.text === name);
-
+    fs.unlink(__dirname+"/public/"+body.todopic, (err) => {
+      if (err) {
+        console.error('Error removing image:', err);
+        // Handle the error if necessary
+      } else {
+        console.log('Image removed successfully!');
+      }
+    });
     if (indexToRemove !== -1) {
       // If the object is found, hatao from the rray
       dataArray.splice(indexToRemove, 1);
@@ -293,6 +313,7 @@ app.get('/todo',(req,res)=>{
   {
     res.redirect("/login");return;
   }
+  
   res.render("todo",{profilePic:req.session.pic,username:req.session.username});
 })
 
@@ -315,3 +336,68 @@ app.get('/logout', function(req, res) {
     res.redirect('/login');
   });
 })
+
+
+
+
+app.put('/todo', function (req, res) {
+  if(req.session.flag===false|| req.session.flag === undefined)
+  {
+    res.status(401).end("unauten");
+    return;
+  }
+
+  const name = req.body.text;
+  const body=req.body;
+  fs.readFile('todo.txt', 'utf-8', function (err, data) {
+    if (err) {
+      console.error('Error reading file:', err);
+      res.status(500).end('error');
+      return;
+    }
+
+    let dataArray = [];
+    if (data.length > 0) {
+      dataArray = JSON.parse(data);
+    }
+
+                     // find the index of the object with the name
+    const indexToEdit = dataArray.findIndex((item) => item.text === name);
+   
+    if (indexToEdit !== -1) {
+      // If the object is found, hatao from the rray
+    //  dataArray.splice(indexToRemove, 1);
+dataArray[indexToEdit].status=true;
+      // Write the updated array back to the file as JSON
+      fs.writeFile('todo.txt', JSON.stringify(dataArray), function (writeErr) {
+        if (writeErr) {
+          console.error('Error writing to file:', writeErr);
+          res.status(500).end('error');
+        } else {
+          console.log('File content updated successfully!');
+          res.status(200).json(dataArray);
+        }
+      });
+    } else {
+      //  object is not found error response
+      res.status(404).end('Object no found');
+    }
+  });
+});
+
+
+app.get('/todoo', (req, res) => {
+  fs.readFile('todo.txt', 'utf-8', function (err, data) {
+    if (err) {
+      console.error('Error reading file:', err);
+      res.status(500).end('error');
+      return;
+    }
+
+    let dataArray = [];
+    if (data.length > 0) {
+      dataArray = JSON.parse(data);
+    }
+    res.status(200).json(dataArray);
+  });
+});
