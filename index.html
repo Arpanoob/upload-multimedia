@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>My Website</title>
+  <style>
+    /* Add inline styles here */
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      padding: 0;
+    }
+
+    header {
+      background-color: #333;
+      color: #fff;
+      padding: 10px;
+    }
+
+    nav ul {
+      list-style: none;
+      margin: 0;
+      padding: 0;
+    }
+
+    nav li {
+      display: inline-block;
+      margin-right: 20px;
+    }
+
+    nav a {
+      color: #fff;
+      text-decoration: none;
+    }
+
+    main {
+      padding: 20px;
+    }
+
+    footer {
+      background-color: #333;
+      color: #fff;
+      text-align: center;
+      padding: 10px;
+    }
+
+    /* New style for "WELCOME" text */
+    .welcome-text {
+      position: absolute;
+      top: 10px;
+     right: 10px;
+      font-size: 24px;
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <!-- Add the "WELCOME" text here -->
+    <div class="welcome-text">WELCOME</div>
+    <nav>
+      <ul>
+        <li><a href="/home">Home</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/todo">Todo</a></li>
+      </ul>
+    </nav>
+  </header>
+
+  <main>
+    <section id="home">
+      <h1>Welcome to our Home Page</h1>
+      <!-- Add home page content here -->
+    </section>
+
+    <section id="about">
+      <h1>About Us</h1>
+      <!-- Add about page content here -->
+    </section>
+
+    <section id="contact">
+      <h1>Contact Us</h1>
+      <!-- Add contact page content here -->
+    </section>
+
+    <section id="todo">
+      <h1>Todo List</h1>
+      <!-- Add todo page content here -->
+    </section>
+  </main>
+
+  <h1></h1><button id="logout">Log out</button>
+  <footer>
+    <p>&copy; 2023 Your Name. All rights reserved.</p>
+  </footer>
+</body>
+<script>
+const logoutButton = document.getElementById('logout'); 
+logoutButton.addEventListener('click', function() {
+  // Send a request to the server to log out the user
+  fetch('/logout')
+    .then(response => {
+      if (response.ok) {
+        // If logout is successful, redirect to the home page or any other page
+        window.location.href = '/';
+      } else {
+        // Handle logout failure, if any
+        console.error('Logout failed.');
+      }
+    })
+    .catch(error => {
+      console.error('Error during logout:', error);
+    });
+});
+</script>
+</html>

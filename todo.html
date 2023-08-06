@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>todo</title>
+  <style>
+    /* Your CSS styles here */
+
+    /* Style for completed tasks (ticked checkboxes) */
+    .completed-task {
+      text-decoration: line-through;
+    }
+
+    /* Style for remove (x) button */
+    .remove-btn {
+      cursor: pointer;
+    }
+
+    /* Style for additional text */
+    .additional-text {
+      font-size: 24px;
+      position: fixed;
+      top: 20%;
+      left: 40%;
+      transform: translateX(-50%);
+    }
+    
+    body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+        }
+        
+        header {
+          background-color: #333;
+          color: #fff;
+          padding: 10px;
+        }
+        
+        nav ul {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+        
+        nav li {
+          display: inline-block;
+          margin-right: 20px;
+        }
+        
+        nav a {
+          color: #fff;
+          text-decoration: none;
+        }
+        
+        main {
+          padding: 20px;
+        }
+        
+        footer {
+          background-color: #333;
+          color: #fff;
+          text-align: center;
+          padding: 10px;
+        }
+        li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    li input[type="checkbox"] {
+      margin-right: 10px;
+    }
+
+    li .remove-btn {
+      margin-left: 10px;
+    }
+  </style>
+</head>
+<body>
+<header>
+    <nav>
+      <ul>
+        <li><a href="/home">Home</a></li>
+        <li><a href="/about">About</a></li>
+        <li><a href="/contact">Contact</a></li>
+        <li><a href="/todo">Todo</a></li>
+      </ul>
+    </nav>
+  </header>
+  <h1>Todo List Here</h1>
+  <br>
+  <input type="text" id="work">
+  <br>
+  <select id="select">
+    <option value="heigh">heigh
+    </option>
+    <option value="medium">medium</option>
+    <option value="low">low</option>  
+  </select>
+  <br>
+  <button id="addButton">add</button>
+  <br>
+  <br>
+  <ul id="ul"></ul>
+  <div class="additional-text" id="additionalText"></div>
+  <footer>
+    <p>&copy; 2023 Your Name. All rights reserved.</p>
+  </footer>
+  
+<script>
+    var ul = document.getElementById('ul'); // Define ul variable
+    var additionalTextElement = document.getElementById('additionalText'); // Define additionalTextElement variable
+  
+    var buttonAdd = document.getElementById('addButton');
+  
+    buttonAdd.addEventListener('click', function () {
+      var text = document.getElementById('work').value;
+      var pri = document.getElementById('select').value;
+      console.log(text + ' ', pri);
+      var todo = { text: text, pri: pri };
+      fetch('/todo', {
+        method: 'post',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(todo),
+      })
+        .then((response) => {
+          if (response.status === 201) {
+        window.location.href = '/about'; // Redirect to the 'about' page
+        return;
+      } else {
+        return response.json(); // Parse the response body as JSON
+      }
+        })
+        .then((data) => {
+          //if(data.status===201){window.location.href = '/about';return;}
+
+          console.log(data); 
+          additionalTextElement.textContent = ''; 
+          ul.innerHTML = '';
+  
+          data.forEach((item) => {
+            var li = document.createElement('li');
+            var checkbox = document.createElement('input');
+            checkbox.type = 'checkbox';
+            checkbox.id = 'checkbox_' + item.text; 
+            checkbox.addEventListener('click', function () {
+              // When the checkbox is clicked, toggle the completed-task class on the parent li element
+              li.classList.toggle('completed-task', checkbox.checked);
+              additionalTextElement.textContent = item.text;
+            });
+            li.appendChild(checkbox);
+            li.appendChild(document.createTextNode(item.text + ' - ' + item.pri));
+            var space = document.createElement('br');
+            var removeBtn = document.createElement('span');
+            removeBtn.textContent = 'x';
+            removeBtn.classList.add('remove-btn');
+            removeBtn.addEventListener('click', function () {
+              ul.removeChild(li);
+              additionalTextElement.textContent = ''; 
+              let a=item;
+              console.log(a);
+              fetch('/todo', {
+        method: 'delete',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(a),
+      }).then(function(){})
+            });
+            li.appendChild(removeBtn);
+  
+            ul.appendChild(li);
+          });
+        });
+    });
+  </script>
+</body>
+</html>

@@ -1,0 +1,329 @@
+<html>
+<head>
+  <title>todo</title>
+  <style>
+    /* Your CSS styles here */
+
+    /* Style for completed tasks (ticked checkboxes) */
+    .completed-task {
+      text-decoration: line-through;
+    }
+
+    /* Style for remove (x) button */
+    .remove-btn {
+      cursor: pointer;
+    }
+
+    /* Style for additional text */
+    .additional-text {
+      font-size: 24px;
+      position: fixed;
+      top: 20%;
+      left: 40%;
+      transform: translateX(-50%);
+    }
+    
+    body {
+          font-family: Arial, sans-serif;
+          margin: 0;
+          padding: 0;
+        }
+        
+        header {
+          background-color: #333;
+          color: #fff;
+          padding: 10px;
+        }
+        
+        nav ul {
+          list-style: none;
+          margin: 0;
+          padding: 0;
+        }
+        
+        nav li {
+          display: inline-block;
+          margin-right: 20px;
+        }
+        
+        nav a {
+          color: #fff;
+          text-decoration: none;
+        }
+        
+        main {
+          padding: 20px;
+        }
+        
+        footer {
+          background-color: #333;
+          color: #fff;
+          text-align: center;
+          padding: 10px;
+        }
+        li {
+      display: flex;
+      align-items: center;
+      margin-bottom: 5px;
+    }
+
+    li input[type="checkbox"] {
+      margin-right: 10px;
+    }
+
+    li .remove-btn {
+      margin-left: 10px;
+    }    .welcome-text {
+      position: absolute;
+      top: 10px;
+     right: 10px;
+      font-size: 24px;
+    }.image-class {
+  width: 30px; /* Set the width to the desired small size */
+  height: 30px; /* Set the height to the desired small size */
+  object-fit: cover; /* This will make the image maintain its aspect ratio while covering the given dimensions */
+}
+   /* Styles for right pane */
+   .right-pane {
+      flex: 1;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+    }
+
+    /* Styles for form elements in right pane */
+    .form-element {
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+<body>
+  <%- include("components/header",{username:username})%>
+
+  <div style="display: flex; flex-direction: row;">
+    <!-- Left Pane -->
+    <div style="flex: 1;">
+      <h1>Todo List Here</h1>
+      <br>
+
+      <ul id="ul"></ul>
+      <div class="additional-text" id="additionalText"></div>
+
+    </div>
+
+    <!-- Right Pane -->
+    <div style="flex: 1; padding: 20px;">
+      <h2>Add</h2>
+      <div class="form-element">
+        <label for="select">Priority:</label>
+        <select id="select">
+          <option value="heigh">High</option>
+          <option value="medium">Medium</option>
+          <option value="low">Low</option>  
+        </select>
+        <h3>Task Name:</h3>
+        <input type="text" id="work">
+        <br>
+      </div>
+      <div class="form-element">
+        <h3>Profile Photo:</h3>
+        <label for="pic"></label>
+        <input type="file" id="pic" name="pic" required>
+      </div>
+      <div class="form-element">
+        <button id="addButton" style="font-family: Arial, Helvetica, sans-serif;">Submit</button>
+      </div>
+    </div>
+  </div>
+  <br>
+  <br>
+  <ul id="ul"></ul>
+  <div class="additional-text" id="additionalText"></div>
+  <footer>
+    <p>&copy; 2023 Your Name. All rights reserved.</p>
+  </footer>
+  
+<script>
+  
+    var ul = document.getElementById('ul'); // Define ul variable
+    var additionalTextElement = document.getElementById('additionalText'); // Define additionalTextElement variable
+    additionalTextElement.textContent = ''; 
+          ul.innerHTML = '';
+    var buttonAdd = document.getElementById('addButton');
+
+    fetch('/todoo',{method:'get'}).
+    then((response)=>{return response.json()}).
+    then((data)=>{    data.forEach((item) => {
+var li = document.createElement('li');
+var checkbox = document.createElement('input');
+checkbox.type = 'checkbox';
+checkbox.id = 'checkbox_' + item.text; 
+console.log(item.status);
+let ab=item;
+
+console.log(ab.status);
+checkbox.addEventListener('click', function () {
+  // When the checkbox is clicked, toggle the completed-task class on the parent li element
+  li.classList.toggle('completed-task', checkbox.checked);
+  //additionalTextElement.textContent = item.text;
+  console.log(ab);
+  fetch('/todo', {
+    method: 'put',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(ab),
+  }).then(function(){
+
+  })
+});
+
+
+// Create the image element
+var image = document.createElement('img');
+let pic=item.todopic;
+console.log(pic);
+image.src = pic;
+image.classList.add('image-class');   // Add any CSS classes you want to style the image
+
+// Append the image before the checkbox
+
+li.appendChild(document.createTextNode(item.text + ' - ' + item.pri));
+li.appendChild(image);
+li.appendChild(checkbox);
+console.log("hjkg"+item.status);
+if(item.status===true)
+{
+   li.classList.add('completed-task');
+ // additionalTextElement.textContent = item.text;
+}
+var space = document.createElement('br');
+var removeBtn = document.createElement('span');
+removeBtn.textContent = 'x';
+removeBtn.classList.add('remove-btn');
+removeBtn.addEventListener('click', function () {
+  ul.removeChild(li);
+  additionalTextElement.textContent = ''; 
+  let a=item;
+  console.log(a);
+  fetch('/todo', {
+    method: 'delete',
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify(a),
+  }).then(function(){})
+});
+
+li.appendChild(removeBtn);
+
+ul.appendChild(li);
+});
+})
+
+  
+    buttonAdd.addEventListener('click', function () {
+      var text = document.getElementById('work').value;
+      var pri = document.getElementById('select').value;
+      const profilePic = document.getElementById('pic').files[0]
+    console.log("ggggg"+profilePic);
+      console.log(text + ' ', pri);
+      var formData = new FormData();
+  formData.append('text', text);
+  formData.append('pri', pri);
+  formData.append('pic', profilePic);
+     // var todo = { text: text, pri: pri ,profilePic:profilePic};
+      fetch('/todo', {
+        method: 'post',
+       
+        body: formData,
+      })
+        .then((response) => {
+          if (response.status === 201) {
+        window.location.href = '/about'; // Redirect to the 'about' page
+        return;
+      } else {
+        return response.json(); // Parse the response body as JSON
+      }
+        })
+        .then((data) => {
+          //if(data.status===201){window.location.href = '/about';return;}
+
+          console.log(data); 
+          additionalTextElement.textContent = ''; 
+          ul.innerHTML = '';
+  
+          data.forEach((item) => {
+
+  var li = document.createElement('li');
+  var checkbox = document.createElement('input');
+  checkbox.type = 'checkbox';
+  checkbox.id = 'checkbox_' + item.text; 
+  console.log(item.status);
+  let ab=item;
+ 
+  console.log(ab.status);
+  checkbox.addEventListener('click', function () {
+    // When the checkbox is clicked, toggle the completed-task class on the parent li element
+    li.classList.toggle('completed-task', checkbox.checked);
+   additionalTextElement.textContent = item.text;
+    console.log(ab);
+    fetch('/todo', {
+      method: 'put',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(ab),
+    }).then(function(){
+
+    })
+  });
+ 
+
+  // Create the image element
+  var image = document.createElement('img');
+  let pic=item.todopic;
+  console.log(pic);
+  image.src = pic;
+  image.classList.add('image-class');   // Add any CSS classes you want to style the image
+
+  // Append the image before the checkbox
+  
+  li.appendChild(document.createTextNode(item.text + ' - ' + item.pri));
+  li.appendChild(image);
+  li.appendChild(checkbox);
+  console.log("hjkg"+item.status);
+  if(item.status===true)
+  {
+     li.classList.add('completed-task');
+   // additionalTextElement.textContent = item.text;
+  }
+  var space = document.createElement('br');
+  var removeBtn = document.createElement('span');
+  removeBtn.textContent = 'x';
+  removeBtn.classList.add('remove-btn');
+  removeBtn.addEventListener('click', function () {
+    ul.removeChild(li);
+    additionalTextElement.textContent = ''; 
+    let a=item;
+    console.log(a);
+    fetch('/todo', {
+      method: 'delete',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify(a),
+    }).then(function(){})
+  });
+
+  li.appendChild(removeBtn);
+
+  ul.appendChild(li);
+});
+});
+        });
+   
+  </script>
+</body>
+</html>
+<!--  -->
